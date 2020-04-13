@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fcm/detail_page.dart';
 
 void main() => runApp(App());
 
@@ -24,13 +25,14 @@ class _MyAppState extends State<MyApp> {
   String token = '';
   bool isSubscribed = false;
 
-  static Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
-    print('myBackgroundMessageHandler');
+  static Future<dynamic> onBackgroundMessageHandler(Map<String, dynamic> message) {
+    debugPrint('onBackgroundMessageHandler');
     if (message.containsKey('data')) {
       final dynamic data = message['data'];
       String name = data['name'];
       String age = data['age'];
-      print('name: $name & age: $age');
+      String page = data['page'];
+      debugPrint('name: $name & age: $age & page: $page');
     }
 
     /*if (message.containsKey('notification')) {
@@ -47,21 +49,21 @@ class _MyAppState extends State<MyApp> {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         debugPrint('onMessage');
-        _getDataFcm(message);
+        _getDataFcm(message, 'onMessage');
         return true;
       },
-      onBackgroundMessage: myBackgroundMessageHandler,
+      onBackgroundMessage: onBackgroundMessageHandler,
       onResume: (Map<String, dynamic> message) async {
-        print('onResume');
-        _getDataFcm(message);
+        debugPrint('onResume');
+        _getDataFcm(message, 'onResume');
       },
       onLaunch: (Map<String, dynamic> message) async {
-        print('onLaunch');
-        _getDataFcm(message);
+        debugPrint('onLaunch');
+        _getDataFcm(message, 'onLaunch');
       },
     );
     _firebaseMessaging.getToken().then((String token) {
-      print('getToken: $token');
+      debugPrint('getToken: $token');
       setState(() {
         this.token = token;
       });
@@ -69,12 +71,27 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  void _getDataFcm(Map<String, dynamic> message) {
+  void _getDataFcm(Map<String, dynamic> message, String type) {
     try {
       var data = message['data'];
       String name = data['name'];
       String age = data['age'];
-      debugPrint('name: $name & age: $age');
+      String page = data['page'];
+      debugPrint('name: $name & age: $age & page: $page');
+      switch (type) {
+        case 'onResume':
+        case 'onLaunch':
+          {
+            if (page == 'detail_page') {
+              _navigateToDetailPage();
+            }
+            break;
+          }
+        default:
+          {
+            debugPrint('unknown type in getDataFcm');
+          }
+      }
     } catch (error) {
       debugPrint("error: $error");
     }
@@ -151,10 +168,26 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
               ),
+              SizedBox(
+                width: double.infinity,
+                child: RaisedButton(
+                  child: Text('Move Page'),
+                  onPressed: () {
+                    _navigateToDetailPage();
+                  },
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _navigateToDetailPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DetailPage()),
     );
   }
 }
