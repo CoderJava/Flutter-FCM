@@ -25,7 +25,7 @@ dependencies:
   cupertino_icons: ^0.1.2
 
   # Flutter plugin for Firebase Cloud Messaging.
-  firebase_messaging: ^6.0.9
+  firebase_messaging: ^6.0.13
 
 dev_dependencies:
   flutter_test:
