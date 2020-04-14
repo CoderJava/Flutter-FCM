@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fcm/detail_page.dart';
@@ -50,7 +52,6 @@ class _MyAppState extends State<MyApp> {
       onMessage: (Map<String, dynamic> message) async {
         debugPrint('onMessage');
         _getDataFcm(message, 'onMessage');
-        return true;
       },
       onBackgroundMessage: onBackgroundMessageHandler,
       onResume: (Map<String, dynamic> message) async {
@@ -62,6 +63,13 @@ class _MyAppState extends State<MyApp> {
         _getDataFcm(message, 'onLaunch');
       },
     );
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(
+            sound: true, badge: true, alert: true, provisional: true));
+    _firebaseMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {
+      debugPrint("Settings registered: $settings");
+    });
     _firebaseMessaging.getToken().then((String token) {
       debugPrint('getToken: $token');
       setState(() {
@@ -73,10 +81,32 @@ class _MyAppState extends State<MyApp> {
 
   void _getDataFcm(Map<String, dynamic> message, String type) {
     try {
-      var data = message['data'];
+      /*debugPrint('message.length: ${message.keys.length}');
+      debugPrint('message: $message');
+      var aps = message['aps'];
+      var name = message['name'];
+      var age = message['age'];
+      debugPrint('name: $name & age: $age');*/
+
+      /*var data = message['data'];
+      debugPrint('data: $data');
       String name = data['name'];
       String age = data['age'];
       String page = data['page'];
+      debugPrint('name: $name & age: $age & page: $page');*/
+      String page = '';
+      String name = '';
+      String age = '';
+      if (Platform.isIOS) {
+        name = message['name'];
+        age = message['age'];
+        page = message['page'];
+      } else if (Platform.isAndroid) {
+        var data = message['data'];
+        name = data['name'];
+        age = data['age'];
+        page = data['page'];
+      }
       debugPrint('name: $name & age: $age & page: $page');
       switch (type) {
         case 'onResume':
